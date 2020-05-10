@@ -1,6 +1,7 @@
 # SDE-SIS-Model
 
 Solve an SIS model for modelling an infection outbreak with stochastic differential equations. A detailed discription of the model can be found in the blog posts:
+- [Modelling an Infection Outbreak like a Physicist. Part 1: The SIS Model](http://ufarasuntalk.home.blog/2020/05/10/modelling-an-infection-outbreak-like-a-physicist-part-1-the-sis-model/)
 
 
 ## The SIS Model
