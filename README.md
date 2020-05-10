@@ -1,6 +1,6 @@
 # SDE-SIS-Model
 
-Solve a SIS model for modelling an infection outbreak with stochastic differential equations. A detailed discription of the model can be found in the blog posts:
+Solve an SIS model for modelling an infection outbreak with stochastic differential equations. A detailed discription of the model can be found in the blog posts:
 
 
 ## The SIS Model
