@@ -26,6 +26,23 @@ python PlotSIS.py SIS.pckl
 ```
 See the code documentation for more information.
 
+### South Africa / Data
+
+The Data example show how the infection, recovery, and death rate can be extracted from data, specifically for South Africa. The `Parameters.py` script takes no command line arguments, but assumes there is a file `Data.txt` with the following columns:
+- Date:       The date (not used).
+- Day:        The number of the day relative to the first reported infection, which is day 0.
+- Cases:      The total number of infections.
+- Change:     The number of new infections per day.
+- Tests:      The total number of tests preformed (not used).
+- Change:     The number of new tests per day.
+- Recovered:  The number of total recoveries.
+- Change:     The number of recoveries per day.
+- Deaths:     The total number of deaths.
+- Change:     The number of deaths per day.
+- Notes:      Notes of interest on that day (not used). This should begin with a `#` to indicate it as a comment.
+
+The script will then create the graphs which can be found in this example with the calculated rates and other statistics.
+
 ## Disclaimer
 
 The code is presented "as is" and is not guaranteed to be without errors or to be accurate. The code and ideas developed therein may be used, distributed, or changed for educational purposes and personal use, but should not be used for commercial purposes or scientific claims.
