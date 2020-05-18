@@ -2,6 +2,7 @@
 
 Solve an SIS model for modelling an infection outbreak with stochastic differential equations. A detailed discription of the model can be found in the blog posts:
 - [Modelling an Infection Outbreak like a Physicist. Part 1: The SIS Model](http://ufarasuntalk.home.blog/2020/05/10/modelling-an-infection-outbreak-like-a-physicist-part-1-the-sis-model/)
+- [Modelling an Infection Outbreak like a Physicist. Part 2: Calculating Infection, Recovery, and Death Rates from Data](ufarasuntalk.home.blog/2020/05/18/modelling-an-infection-outbreak-like-a-physicist-part-2-calculating-infection-recovery-and-death-rates-from-data/)
 
 
 ## The SIS Model
@@ -25,6 +26,23 @@ The `SIS.py` script will then create a `SIS.pckl` file with the results, which c
 python PlotSIS.py SIS.pckl
 ```
 See the code documentation for more information.
+
+### South Africa / Data
+
+The Data example show how the infection, recovery, and death rate can be extracted from data, specifically for South Africa. The `Parameters.py` script takes no command line arguments, but assumes there is a file `Data.txt` with the following columns:
+- Date:       The date (not used).
+- Day:        The number of the day relative to the first reported infection, which is day 0.
+- Cases:      The total number of infections.
+- Change:     The number of new infections per day.
+- Tests:      The total number of tests preformed (not used).
+- Change:     The number of new tests per day.
+- Recovered:  The number of total recoveries.
+- Change:     The number of recoveries per day.
+- Deaths:     The total number of deaths.
+- Change:     The number of deaths per day.
+- Notes:      Notes of interest on that day (not used). This should begin with a `#` to indicate it as a comment.
+
+The script will then create the graphs which can be found in this example with the calculated rates and other statistics.
 
 ## Disclaimer
 
