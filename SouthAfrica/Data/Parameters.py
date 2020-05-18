@@ -6,8 +6,7 @@ rate rho (recoveries per day), will be again susceptible to be infected, hence
 (S --> I --> S). Let N be the total population which can be infected and let Ns
 and Ni be the number of people susceptible and infected, respectively, then the
 flow from S to I is beta*Ni*Ns = beta*Ni*(N - Ni), while the flow from I back to
-S is rho*Ni. It is additionally assumed that infected people can die (D) at a
-rate delta (deaths per day) and the flow from I to D is delta*Ni.
+S is rho*Ni.
 """
 
 
@@ -55,6 +54,17 @@ if __name__ == "__main__":
                 'H: Workers day / lvl4 lockdown started']
     abc = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     
+    # Rework recoveries to per day
+    infecRecov = np.zeros(len(data[:,6]))
+    j = len(data[:,6])
+    tmp = data[-1,6]
+    for i in range(j-1, 14, -1):
+        if (data[i,6] != 0.0):
+            infecRecov[i+1:j] = tmp/(j - i - 1.0)
+            j = i + 1
+            tmp = data[i,6]
+    infecRecov[i:j] = tmp/(j - i)
+    
     # Positive tests vs time
     posTest = (data[:,2]/data[:,4])*100.0
     s = 0.0
@@ -66,7 +76,7 @@ if __name__ == "__main__":
             s2 += posTest[i]**2
             N += 1.0
     avgPosTestI = s/N
-    # Uncertainty on average is standard deviation devided by the square-root of
+    # Uncertainty on average is standard deviation divided by the square-root of
     # the number of data points used to calculate the average
     stdPosTestI = np.sqrt((s2/N - avgPosTestI**2)/N)
     s = 0.0
@@ -91,17 +101,23 @@ if __name__ == "__main__":
     stdPosTest4 = np.sqrt((s2/N - avgPosTest4**2)/N)
     print [avgPosTestI, stdPosTestI], [avgPosTest5, stdPosTest5], [avgPosTest4, stdPosTest4]
     
+    # 3 day running average of infections, recoveries, deaths, and positive tests
+    avg3infct = np.zeros_like(data[:,2])
+    avg3recov = np.zeros_like(avg3infct)
+    avg3death = np.zeros_like(avg3infct)
+    avg3ptest = np.zeros_like(avg3infct)
+    for i in range(1, len(avg3infct)-1):
+        avg3infct[i] = (data[i-1,2] + data[i,2] + data[i+1,2])/3.0
+        avg3recov[i] = (infecRecov[i-1] + infecRecov[i] + infecRecov[i+1])/3.0
+        avg3death[i] = (data[i-1,8] + data[i,8] + data[i+1,8])/3.0
+        avg3ptest[i] = (posTest[i-1] + posTest[i] + posTest[i+1])/3.0
+    
     # Slope and intercept of infection rate vs active infections times susceptibles
     # (First calculate with formula to have initial values and then with fitting
-    #  function to have uncertainties; uncertainty on data point is estimated to
-    #  be the square-root of the values)
+    #  function to have uncertainties)
     b1, c1 = SlopeIntercept(sai[:23], data[:23,2])
     #print b1, c1
-    err = data[:23,2]
-    for i in range(len(err)):
-        if (err[i] == 0.0): # Ensure uncertainty isn't zero
-            err[i] = 1.0
-    fit, cov = curve_fit(StraightLine, sai[:23], data[:23,2], sigma=np.sqrt(err), p0=[1.1*b1, 1.1*c1])
+    fit, cov = curve_fit(StraightLine, sai[:23], data[:23,2], p0=[1.1*b1, 1.1*c1])
     b1 = fit[0]
     c1 = fit[1]
     cov = np.sqrt(np.diag(cov))
@@ -110,7 +126,7 @@ if __name__ == "__main__":
     print fit, cov, (cov/np.abs(fit))*100.0
     b2, c2 = SlopeIntercept(sai[23:57], data[23:57,2])
     #print b2, c2
-    fit, cov = curve_fit(StraightLine, sai[23:57], data[23:57,2], sigma=np.sqrt(data[23:57,2]), p0=[1.1*b2, 1.1*c2])
+    fit, cov = curve_fit(StraightLine, sai[23:57], data[23:57,2], p0=[1.1*b2, 1.1*c2])
     b2 = fit[0]
     c2 = fit[1]
     cov = np.sqrt(np.diag(cov))
@@ -127,20 +143,10 @@ if __name__ == "__main__":
     ec3 = cov[1]
     print fit, cov, (cov/np.abs(fit))*100.0
     
-    # Rework recoveries to per day
-    infecRecov = np.zeros(len(data[:,6]))
-    j = len(data[:,6])
-    tmp = data[-1,6]
-    for i in range(j-1, 14, -1):
-        if (data[i,6] != 0.0):
-            infecRecov[i+1:j] = tmp/(j - i - 1.0)
-            j = i + 1
-            tmp = data[i,6]
-    infecRecov[i:j] = tmp/(j - i)
     # Slope and intercept of recovery rate vs active infections
     r, cr = SlopeIntercept(ai[15:], infecRecov[15:])
     #print r, cr
-    fit, cov = curve_fit(StraightLine, ai[15:], infecRecov[15:], sigma=np.sqrt(infecRecov[15:]), p0=[1.1*r, 1.1*cr])
+    fit, cov = curve_fit(StraightLine, ai[15:], infecRecov[15:], p0=[1.1*r, 1.1*cr])
     r = fit[0]
     cr = fit[1]
     cov = np.sqrt(np.diag(cov))
@@ -151,11 +157,7 @@ if __name__ == "__main__":
     # Slope and intercept of death rate vs active infections
     d, cd = SlopeIntercept(ai[21:], data[21:,8])
     #print d, cd
-    err = data[21:,8]
-    for i in range(len(err)):
-        if (err[i] == 0.0):
-            err[i] = 1.0
-    fit, cov = curve_fit(StraightLine, ai[21:], data[21:,8], sigma=np.sqrt(err), p0=[1.1*d, 1.1*cd])
+    fit, cov = curve_fit(StraightLine, ai[21:], data[21:,8], p0=[1.1*d, 1.1*cd])
     d = fit[0]
     cd = fit[1]
     cov = np.sqrt(np.diag(cov))
@@ -215,7 +217,8 @@ if __name__ == "__main__":
     
     maks = np.max(data[:,2])
     subplot1a = fig1.add_subplot(311)
-    subplot1a.plot(data[:,0], data[:,2], color='r', markeredgecolor='r', marker='o', linestyle=':', label='Data')
+    subplot1a.plot(data[:,0], data[:,2], color='r', markeredgecolor='r', marker='o', linestyle=':')
+    subplot1a.plot(data[1:-1,0], avg3infct[1:-1], color='r')
     for i in range(len(days)):
         subplot1a.vlines(days[i], 0.0, maks, color='grey', linestyle='--', label=comments[i])
     subplot1a.axvspan(36.0, 39.0, color='grey', alpha=0.3, label='Easter')
@@ -231,6 +234,7 @@ if __name__ == "__main__":
     subplot1b = fig1.add_subplot(312)
     subplot1b.plot(data[:,0], data[:,6], color='lightgreen', markeredgecolor='lightgreen', marker='^', linestyle='--', label='Data')
     subplot1b.plot(data[:,0], infecRecov, color='g', markeredgecolor='g', marker='o', linestyle=':', label='Reworked data')
+    subplot1b.plot(data[1:-1,0], avg3recov[1:-1], color='g', label='3 day running average')
     for i in range(len(days)):
         subplot1b.vlines(days[i], 0.0, maks, color='grey', linestyle='--')
         subplot1b.text(days[i], maks, abc[i], fontsize=16)
@@ -246,6 +250,7 @@ if __name__ == "__main__":
     maks = np.max(data[:,8])
     subplot1c = fig1.add_subplot(313)
     subplot1c.plot(data[:,0], data[:,8], color='k', markeredgecolor='k', marker='o', linestyle=':')
+    subplot1c.plot(data[1:-1,0], avg3death[1:-1], color='k')
     for i in range(len(days)):
         subplot1c.vlines(days[i], 0.0, maks, color='grey', linestyle='--', label=comments[i])
     subplot1c.axvspan(36.0, 39.0, color='grey', alpha=0.3)
@@ -262,7 +267,7 @@ if __name__ == "__main__":
     subplot2 = fig2.add_subplot(111)
     subplot2.plot(sai[:23], data[:23,2], color='r', markeredgecolor='r', marker='o', linestyle='', label='Data: 5 - 27 March (before lvl5 lockdown)')
     subplot2.plot(sai[23:57], data[23:57,2], color='orange', markeredgecolor='orange', marker='o', linestyle='', label='Data: 28 March - 30 April (lvl5 lockdown)')
-    subplot2.plot(sai[57:], data[57:,2], color='c', markeredgecolor='c', marker='o', linestyle='', label='Data: 29 April - 16 May (lvl4 lockdown)')
+    subplot2.plot(sai[57:], data[57:,2], color='c', markeredgecolor='c', marker='o', linestyle='', label='Data: 29 April - 17 May (lvl4 lockdown)')
     subplot2.plot(sai, nwnfct, color='orange', label=r'$(I S - %6.2f / %6.3g) \beta_i (t) + (I S - %6.2f / %6.3g) \beta_5 (t) + (I S - %6.2f / %6.3g) \beta_4 (t)$'%(abs(c1), b1, abs(c2), b2, abs(c3), b3))
     subplot2.set_title('South African COVID-19 Data', fontsize=18)
     subplot2.set_xlabel(r'Active infections times susceptibles [$IS = I(N-I)$]', fontsize=16)
@@ -303,7 +308,7 @@ if __name__ == "__main__":
     subplot4.plot(data[:23,4], data[:23,2], color='r', markeredgecolor='r', marker='o', linestyle='', label='Data: 5 - 27 March (before lvl5 lockdown)')
     subplot4.plot(data[23:38,4], data[23:38,2], color='orange', markeredgecolor='orange', marker='o', linestyle='', label='Data: 28 March - 11 April (few tests)')
     subplot4.plot(data[38:55,4], data[38:55,2], color='b', markeredgecolor='b', marker='o', linestyle='', label='Data: 12 - 28 April (majority of lvl5 lockdown)')
-    subplot4.plot(data[55:,4], data[55:,2], color='g', markeredgecolor='g', marker='o', linestyle='', label='Data: 29 April - 16 May (increased testing)')
+    subplot4.plot(data[55:,4], data[55:,2], color='g', markeredgecolor='g', marker='o', linestyle='', label='Data: 29 April - 17 May (increased testing)')
     subplot4.set_title('South African COVID-19 Data', fontsize=18)
     subplot4.set_xlabel('Tests per day', fontsize=16)
     subplot4.set_xlim(0.0, np.max(data[:,4]))
@@ -318,6 +323,7 @@ if __name__ == "__main__":
     fig5 = plt.figure()
     subplot5 = fig5.add_subplot(111)
     subplot5.plot(data[:,0], posTest, color='m', markeredgecolor='m', marker='o', linestyle='', label='Data')
+    subplot5.plot(data[1:-1,0], avg3ptest[1:-1], color='m', label='3 day running average')
     subplot5.hlines(avgPosTestI, 0.0, 22.0, color='r', label=r'$%4.1f \pm %3.1f$'%(avgPosTestI, stdPosTestI))
     subplot5.fill_between(data[0:23,0], avgPosTestI-stdPosTestI, avgPosTestI+stdPosTestI, color='r', alpha=0.2)
     subplot5.hlines(avgPosTest5, 22.0, 57.0, color='g', label=r'$%4.1f \pm %3.1f$'%(avgPosTest5, stdPosTest5))
@@ -379,5 +385,3 @@ if __name__ == "__main__":
     subplot6.legend(lines, [l.get_label() for l in lines], loc=3, fontsize=16, framealpha=0.5)
     
     plt.show()
-    
-    
