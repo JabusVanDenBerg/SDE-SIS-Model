@@ -2,6 +2,7 @@
 
 Solve an SIS model for modelling an infection outbreak with stochastic differential equations. A detailed discription of the model can be found in the blog posts:
 - [Modelling an Infection Outbreak like a Physicist. Part 1: The SIS Model](http://ufarasuntalk.home.blog/2020/05/10/modelling-an-infection-outbreak-like-a-physicist-part-1-the-sis-model/)
+- [Modelling an Infection Outbreak like a Physicist. Part 2: Calculating Infection, Recovery, and Death Rates from Data](ufarasuntalk.home.blog/2020/05/18/modelling-an-infection-outbreak-like-a-physicist-part-2-calculating-infection-recovery-and-death-rates-from-data/)
 
 
 ## The SIS Model
