@@ -1,12 +1,13 @@
-"""Plot modelling results for SIS model of an infection outbreak with varying coefficients.
+"""Plot modelling results for SISD model of an infection outbreak with varying coefficients.
 
 Model assumes that people susceptible to be infected (S) are infected (I) at a
-rate of beta (% of people per day) and that infected people who recover at a
-rate rho (recoveries per day), will be again susceptible to be infected, hence
-(S --> I --> S). Let N be the total population which can be infected and let Ns
+rate of beta (% of people per day), that infected people who recover at a rate
+rho (recoveries per day), will be again susceptible to be infected, and that
+infected people can die (D) at a rate delta (deaths per day), hence (S -> I -> S
+or S -> I -> D). Let N be the total population which can be infected and let Ns
 and Ni be the number of people susceptible and infected, respectively, then the
-flow from S to I is beta*Ni*Ns = beta*Ni*(N - Ni), while the flow from I back to
-S is rho*Ni.
+flow from S to I is beta*Ni*Ns = beta*Ni*(N - Ni) and the flow from I back to S
+is rho*Ni, while the flow from I to D is delta*Ni.
 """
 
 
@@ -26,21 +27,55 @@ def Plot(result):
     
     Arguments:
         result : A dictionary with the following keys:
-                 'Nt'    : The number of time bins.
-                 't'     : The mid points of the time bins.
-                 'tbins' : The boundaries of the time bins. It is assumed that
-                           the first value is the lower value of the first bin.
-                 'Ni'    : The number of infection bins.
-                 'I'     : The mid points of the infection bins.
-                 'Ibins' : The boundaries of the infection bins. It is assumed
-                           that the first value is the lower value of the first
-                           bin.
-                 'avgI'  : The average number of infections as a function of
-                           time.
-                 'stdI'  : The standard deviation of the number of infections
-                           as a function of time.
-                 'f'     : The probability distribution function of infections
-                           as a function of time and the number of infections.
+                 'Nt'       : The number of time bins.
+                 't'        : The mid points of the time bins.
+                 'tbins'    : The boundaries of the time bins. It is assumed
+                              that the first value is the lower value of the
+                              first bin.
+                 'Ni'       : The number of infection bins.
+                 'I'        : The mid points of the infection bins.
+                 'Ibins'    : The boundaries of the infection bins. It is
+                              assumed that the first value is the lower value
+                              of the first bin.
+                 'avgI'     : The average number of acive infections as a
+                              function of time.
+                 'errI'     : The uncertainty of the number of active infections
+                               as a function of time.
+                 'avgIt'    : The average accumulated number of infections as
+                              a function of time.
+                 'errIt'    : The uncertainty of the accumulated number of
+                              infections as a function of time.
+                 'probI'    : The most probable number of active infections as
+                              a function of time.
+                 'errProbI' : The uncertainty of the most probable number of
+                              active infections as a function of time.
+                 'avgR'     : The average number of recoveries as a function
+                              of time.
+                 'errR'     : The uncertainty of the number of recoveries as a
+                              function of time.
+                 'avgD'     : The average number of deaths as a function of
+                              time.
+                 'errD'     : The uncertainty of the number of deaths as a
+                              function of time.
+                 'f'        : The probability distribution function of
+                              infections as a function of time and the number
+                              of infections.
+                 'dataT'    : The time of the data.
+                 'dataIt'   : The total number of infections.
+                 'dataIa'   : The number of active infections.
+                 'dataRt'   : The number of recoveries.
+                 'dataDt'   : The number of deaths.
+                 '3draIt'   : The three day running average of the total number
+                              of infections.
+                 '3draIa'   : The three day running average of the number of
+                              active infections.
+                 '3draRt'   : The three day running average of the number of
+                              recoveries.
+                 '3draDt'   : The three day running average of the number of
+                              deaths.
+                 'days'     : A list of important days.
+                 'comments' : Comments on the important days.
+                 'abc'      : Labels for the important days.
     """
     ############################################################################
     # Raw data and three day running average                                   #
@@ -156,26 +191,6 @@ def Plot(result):
     
     cbar = fig2.colorbar(cf, ax=(subplot2a, subplot2b), fraction=0.05)
     cbar.set_label('log(Probability) [not normalised]', fontsize=16)
-    
-    ############################################################################
-    # Factor of unknown cases                                                  #
-    ############################################################################
-    maks = 2.0
-    fig3 = plt.figure()
-    subplot3 = fig3.add_subplot(111)
-    subplot3.plot(result['t'][1:-1], result['probRatio'], color='g', label=r'$I_{\rm peak} / \bar{I}$ $=$ $%4.2f$'%(np.average(result['probRatio'][10:])))
-    subplot3.plot(result['t'][1:-1], result['uncrRatio'], color='b', label=r'$(\bar{I} + \delta \bar{I}) / \bar{I}$ $=$ $%4.2f$'%(np.average(result['uncrRatio'][10:])))
-    subplot3.plot(result['t'][1:-1], result['stdvRatio'], color='r', label=r'$(\bar{I} + \sigma_I) / \bar{I}$ $=$ $%4.2f$'%(np.average(result['stdvRatio'][10:])))
-    for i in range(len(result['days'])):
-        subplot3.axvline(result['days'][i], color='grey', linestyle='--')
-        subplot3.text(result['days'][i], maks, abc[i], fontsize=16)
-    subplot3.axvspan(36.0, 39.0, color='grey', alpha=0.3)
-    subplot3.set_xlabel('Days since first infection on 5 March', fontsize=16)
-    subplot3.set_xlim(result['t'][0], result['t'][-2])
-    subplot3.set_ylabel('Estimated factor of unknown infection', fontsize=16)
-    subplot3.set_ylim(1.0, maks)
-    subplot3.tick_params(labelsize=16, top=True, right=True, direction='inout')
-    plt.legend(loc=0, fontsize=16, framealpha=0.3)
     
     plt.show()
 
