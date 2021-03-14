@@ -25,7 +25,7 @@ def InfectionRate(t, x, betas, times, trans):
     for i in range(1, len(times)):
         beta += betas[i]*0.5*(np.tanh((t - times[i-1])/trans) - np.tanh((t - times[i])/trans))
     beta += betas[-1]*0.5*(1.0 + np.tanh((t - times[-1])/trans))
-    # Modifications
+    # Modifications to fit data better
     time = [4.0, 13.0, 22.0, 36.0, 43.0, 58.0, 77.0,]
     mods = [0.5,  1.0, 1.15, 0.35,  0.5, 0.65, 0.85, 0.8]
     mod = mods[0]*0.5*(1.0 + np.tanh((time[0] - t)/trans))
@@ -36,7 +36,7 @@ def InfectionRate(t, x, betas, times, trans):
     
 def RecoveryRate(t, x, rho, delay, trans):
     r = rho*0.5*(1.0 + np.tanh((t - delay + 5.0)/trans))
-    # Modifications
+    # Modifications to fit data better
     time = [34.0, 69.0]
     mods = [0.05, 0.6, 1.0]
     mod = mods[0]*0.5*(1.0 + np.tanh((time[0] - t)/trans))
@@ -47,7 +47,7 @@ def RecoveryRate(t, x, rho, delay, trans):
 
 def DeathRate(t, x, delta, delay, trans):
     d = delta*0.5*(1.0 + np.tanh((t - delay - 0.5)/trans))
-    # Modifications
+    # Modifications to fit data better
     time = [40.0, 53.0, 80.0]
     mods = [0.4,   0.8,  0.7, 0.8]
     mod = mods[0]*0.5*(1.0 + np.tanh((time[0] - t)/trans))
@@ -300,8 +300,6 @@ def Bin(results, k, t, x, status, args):
         results['errProbI'] = uncr
         # Normalise histogram
         results['f'] *= norm
-        # for i in range(results['Ni']):
-            # results['f'][:,i] /= np.log10(results['Ibins'][i+1]) - np.log10(results['Ibins'][i])
         # Estimate factor of unknown infections
         results['probRatio'] = results['probI'][1:-1]/results['avgI'][1:-1]
         results['uncrRatio'] = (results['avgI'][1:-1] + results['errI'][1:-1])/results['avgI'][1:-1]
